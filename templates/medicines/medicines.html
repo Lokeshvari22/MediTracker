@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}
+Medicines | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4 mb-5">
+
+    <!-- ==============================
+         Page Header
+    =============================== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">
+                <i class="fa-solid fa-pills text-success me-2"></i>Medicine Inventory
+            </h2>
+            <p class="text-muted mb-0">
+                Manage stock levels, categories, and inventory alerts efficiently.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('medicine.add_medicine') }}" class="btn btn-success shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Add Medicine
+            </a>
+        </div>
+    </div>
+
+    <!-- ==============================
+         Search & Filters
+    =============================== -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('medicine.medicines') }}">
+                <div class="row g-3">
+                    <!-- Search Input -->
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text"
+                                   name="search"
+                                   class="form-control"
+                                   placeholder="Search medicine name or batch..."
+                                   value="{{ search or '' }}">
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="col-lg-3">
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            <option value="Tablet" {% if category == 'Tablet' %}selected{% endif %}>Tablet</option>
+                            <option value="Capsule" {% if category == 'Capsule' %}selected{% endif %}>Capsule</option>
+                            <option value="Injection" {% if category == 'Injection' %}selected{% endif %}>Injection</option>
+                            <option value="Syrup" {% if category == 'Syrup' %}selected{% endif %}>Syrup</option>
+                            <option value="Drops" {% if category == 'Drops' %}selected{% endif %}>Drops</option>
+                            <option value="Cream" {% if category == 'Cream' %}selected{% endif %}>Cream</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="col-lg-2 d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-filter me-1"></i> Filter
+                        </button>
+                    </div>
+
+                    <!-- Reset -->
+                    <div class="col-lg-1 d-grid">
+                        <a href="{{ url_for('medicine.medicines') }}" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+                    </div>
+
+                    <!-- Low Stock Filter -->
+                    <div class="col-lg-2 d-grid">
+                        <a href="{{ url_for('medicine.low_stock_medicines') }}" class="btn btn-warning text-dark fw-semibold">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Low Stock
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==============================
+         Quick Action Bar
+    =============================== -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ url_for('medicine.add_medicine') }}" class="btn btn-sm btn-outline-success">
+            <i class="fa-solid fa-plus me-1"></i> New Item
+        </a>
+        <a href="{{ url_for('import_export.import_csv') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fa-solid fa-file-import me-1"></i> Import CSV
+        </a>
+        <a href="{{ url_for('import_export.export_csv') }}" class="btn btn-sm btn-outline-info">
+            <i class="fa-solid fa-file-export me-1"></i> Export Data
+        </a>
+        <a href="{{ url_for('medicine.expiring_medicines') }}" class="btn btn-sm btn-outline-danger ms-auto">
+            <i class="fa-solid fa-calendar-xmark me-1"></i> Expired & Expiring
+        </a>
+    </div>
+
+    <!-- ==============================
+         Medicine Inventory Table
+    =============================== -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white py-3">
+            <h5 class="mb-0 fw-bold">
+                <i class="fa-solid fa-list me-2"></i>Current Stock Listing
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">#</th>
+                            <th>Medicine Name</th>
+                            <th>Batch #</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th class="text-center" width="160">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if medicines %}
+                            {% for medicine in medicines %}
+                            <tr>
+                                <td class="ps-3 text-muted">{{ loop.index }}</td>
+                                <td>
+                                    <strong class="text-dark">{{ medicine.name }}</strong>
+                                </td>
+                                <td><code>{{ medicine.batch_number }}</code></td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ medicine.category or 'General' }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if medicine.is_low_stock %}text-danger{% endif %}">
+                                        {{ medicine.quantity }}
+                                    </span>
+                                </td>
+                                <td>₹ {{ "%.2f"|format(medicine.price or 0.0) }}</td>
+                                <td>{{ medicine.expiry_date.strftime('%d-%m-%Y') if medicine.expiry_date else 'N/A' }}</td>
+                                <td>
+                                    {% if medicine.is_expired %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i>Expired</span>
+                                    {% elif medicine.is_low_stock %}
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Low Stock</span>
+                                    {% else %}
+                                        <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Available</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('medicine.edit_medicine', medicine_id=medicine.id) }}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edit">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal{{ medicine.id }}"
+                                                title="Delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fa-solid fa-boxes-empty fa-3x text-secondary mb-3"></i>
+                                        <h5>No medicines found in inventory.</h5>
+                                        <p class="mb-0">Click <strong>Add Medicine</strong> or <strong>Import CSV</strong> to update stock.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================
+         Pagination
+    =============================== -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('medicine.medicines', page=pagination.prev_num, search=search, category=category) }}">
+                    Previous
+                </a>
+            </li>
+
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('medicine.medicines', page=page_num, search=search, category=category) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('medicine.medicines', page=pagination.next_num, search=search, category=category) }}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- ==============================
+         Delete Confirmation Modals
+    =============================== -->
+    {% if medicines %}
+        {% for medicine in medicines %}
+        <div class="modal fade" id="deleteModal{{ medicine.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fa-solid fa-trash me-2"></i>Delete Medicine
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to permanently delete <strong>{{ medicine.name }}</strong> (Batch: {{ medicine.batch_number }})?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('medicine.delete_medicine', medicine_id=medicine.id) }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% endblock %}

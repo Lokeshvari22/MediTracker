@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Medicine Expiry Alert</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 18px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eeeeee;
+            text-align: center;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .warning {
+            margin-top: 20px;
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #888888;
+            line-height: 1.5;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #dc3545;
+            color: #ffffff !important;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>⚠️ Medicine Expiry Alert</h2>
+    </div>
+
+    <p>Dear {{ user.username if user else 'Pharmacy Manager' }},</p>
+
+    <p>
+        The following medicine(s) in your inventory are approaching their expiry date or have already expired.
+        Please review your stock and take necessary action.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Medicine Name</th>
+                <th>Batch No</th>
+                <th>Expiry Date</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if medicines is iterable and medicines is not string and medicines is not mapping %}
+                {% for medicine in medicines %}
+                <tr>
+                    <td>{{ medicine.name }}</td>
+                    <td>{{ medicine.batch_number }}</td>
+                    <td>{{ medicine.expiry_date }}</td>
+                    <td>{{ medicine.quantity }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td>{{ medicine_name or medicines.name }}</td>
+                    <td>{{ batch_number or medicines.batch_number }}</td>
+                    <td>{{ expiry_date or medicines.expiry_date }}</td>
+                    <td>{{ quantity or medicines.quantity }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <p class="warning">
+        ⚠ Please check these items immediately before dispensing to customers.
+    </p>
+
+    <div style="text-align: center;">
+        <a href="{{ dashboard_url or url_for('dashboard.dashboard', _external=True) }}" class="button">
+            Open Inventory Dashboard
+        </a>
+    </div>
+
+    <div class="footer">
+        <strong>MediTracker</strong><br>
+        Smart Medicine Inventory & Expiry Management System<br>
+        <small>This is an automated system notification. Please do not reply directly to this email.</small>
+    </div>
+
+</div>
+
+</body>
+</html>

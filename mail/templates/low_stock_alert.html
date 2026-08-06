@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Low Stock Alert</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 18px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .content {
+            padding: 20px 0;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .medicine-box {
+            background-color: #fff9e6;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .medicine-box p {
+            margin: 5px 0;
+        }
+
+        .warning {
+            color: #d39e00;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #777777;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #212529;
+            color: #ffffff !important;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>⚠️ Low Stock Warning</h2>
+    </div>
+
+    <div class="content">
+
+        <p>Hello {{ user.username if user else user_name or 'Pharmacy Manager' }},</p>
+
+        <p>
+            This is an automated notification from 
+            <strong>MediTracker</strong>.
+        </p>
+
+        <p>
+            The following medicine stock level has dropped below or reached
+            the configured minimum alert threshold.
+        </p>
+
+        <div class="medicine-box">
+            {% if medicines is iterable and medicines is not string and medicines is not mapping %}
+                {% for med in medicines %}
+                    <p><strong>Medicine Name:</strong> {{ med.name }}</p>
+                    <p><strong>Current Stock:</strong> {{ med.quantity }}</p>
+                    <p><strong>Minimum Required Threshold:</strong> {{ med.low_stock_alert }}</p>
+                    <hr style="border: 0; border-top: 1px solid #ffe8a1; margin: 10px 0;">
+                {% endfor %}
+            {% else %}
+                <p>
+                    <strong>Medicine Name:</strong>
+                    {{ medicine_name or medicines.name }}
+                </p>
+                <p>
+                    <strong>Current Stock:</strong>
+                    {{ current_stock or medicines.quantity }}
+                </p>
+                <p>
+                    <strong>Minimum Required Stock:</strong>
+                    {{ minimum_stock or medicines.low_stock_alert }}
+                </p>
+            {% endif %}
+
+            <p class="warning">
+                Please reorder or restock these items soon to prevent stockouts.
+            </p>
+        </div>
+
+        <p>
+            Keeping your inventory updated ensures uninterrupted fulfillment and better operational control.
+        </p>
+
+        <div style="text-align: center;">
+            <a href="{{ dashboard_url or url_for('dashboard.dashboard', _external=True) }}" class="button">
+                Open Dashboard
+            </a>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>
+            <strong>MediTracker</strong> — Smart Medicine Inventory & Expiry Management System
+        </p>
+        <p>
+            This is an automated email notification. Please do not reply directly to this address.
+        </p>
+    </div>
+
+</div>
+
+</body>
+</html>

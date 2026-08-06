@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}
+Analytics Dashboard | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4 mb-5">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-chart-line text-primary me-2"></i>Analytics Dashboard
+            </h2>
+            <p class="text-muted mb-0">
+                View business insights, inventory performance metrics, and sales trends.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('report.reports') if 'report' in config.get('ENDPOINTS', {}) else url_for('dashboard.dashboard') }}"
+               class="btn btn-outline-primary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted text-uppercase fw-semibold">Total Revenue</small>
+                    <h2 class="text-primary fw-bold mb-0 mt-2">
+                        ₹ {{ "%.2f"|format(total_revenue or total_sales or 0.0) }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted text-uppercase fw-semibold">Net Profit</small>
+                    <h2 class="text-success fw-bold mb-0 mt-2">
+                        ₹ {{ "%.2f"|format(net_profit or profit or 0.0) }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted text-uppercase fw-semibold">Inventory Stock Value</small>
+                    <h2 class="text-warning fw-bold mb-0 mt-2">
+                        ₹ {{ "%.2f"|format(inventory_value or 0.0) }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-danger border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted text-uppercase fw-semibold">Expired Stock Loss</small>
+                    <h2 class="text-danger fw-bold mb-0 mt-2">
+                        ₹ {{ "%.2f"|format(expired_loss or expired_value or 0.0) }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-chart-area me-2 text-primary"></i>Monthly Sales Trend
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-chart-pie me-2 text-success"></i>Category Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Insights Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-trophy me-2 text-warning"></i>Top Selling Medicines
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Medicine</th>
+                                    <th class="text-end pe-3">Units Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if top_selling %}
+                                    {% for item in top_selling %}
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark">{{ item.name or item.medicine }}</td>
+                                        <td class="text-end pe-3 fw-bold text-primary">{{ item.total or item.quantity or item.sold or 0 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center py-4 text-muted">
+                                            No sales data recorded yet.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Low Stock Alert Items
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Medicine</th>
+                                    <th class="text-end pe-3">Current Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if low_stock %}
+                                    {% for medicine in low_stock %}
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark">{{ medicine.name }}</td>
+                                        <td class="text-end pe-3">
+                                            <span class="badge bg-danger">{{ medicine.quantity }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center py-4 text-muted">
+                                            All medicine stock levels are sufficient.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiry & Profit Analysis -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-clock me-2 text-warning"></i>Medicines Expiring Soon
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Medicine</th>
+                                    <th>Expiry Date</th>
+                                    <th class="text-end pe-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if expiry_soon %}
+                                    {% for medicine in expiry_soon %}
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark">{{ medicine.name }}</td>
+                                        <td>
+                                            {% if medicine.expiry_date %}
+                                                {{ medicine.expiry_date.strftime("%d-%m-%Y") if medicine.expiry_date.strftime is defined else medicine.expiry_date }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            <span class="badge bg-warning text-dark">
+                                                {{ medicine.days_left if medicine.days_left is defined else 'Expiring Soon' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted">
+                                            No medicines approaching expiration.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light fw-bold py-3">
+                    <i class="fa-solid fa-coins me-2 text-success"></i>Monthly Net Profit Overview
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Month</th>
+                                    <th class="text-end pe-3">Net Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if monthly_profit %}
+                                    {% for month in monthly_profit %}
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark">{{ month.name or month.month }}</td>
+                                        <td class="text-end pe-3 fw-bold text-success">
+                                            ₹ {{ "%.2f"|format(month.profit or month.sales or 0.0) }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center py-4 text-muted">
+                                            No monthly profit breakdown available.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js Engine -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Sales Trend Line Chart
+    const salesCtx = document.getElementById("salesChart");
+    if (salesCtx) {
+        new Chart(salesCtx, {
+            type: "line",
+            data: {
+                labels: {{ (sales_labels or [])|tojson }},
+                datasets: [{
+                    label: "Monthly Revenue (₹)",
+                    data: {{ (sales_values or [])|tojson }},
+                    borderColor: "#0d6efd",
+                    backgroundColor: "rgba(13, 110, 253, 0.1)",
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                }
+            }
+        });
+    }
+
+    // Category Doughnut/Pie Chart
+    const pieCtx = document.getElementById("pieChart");
+    if (pieCtx) {
+        new Chart(pieCtx, {
+            type: "doughnut",
+            data: {
+                labels: {{ (category_labels or [])|tojson }},
+                datasets: [{
+                    data: {{ (category_values or [])|tojson }},
+                    backgroundColor: [
+                        "#198754", "#0d6efd", "#ffc107", "#dc3545", "#0dcaf0", "#6c757d"
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% endblock %}

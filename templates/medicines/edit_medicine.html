@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Medicine | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h3 class="mb-0">
+
+                        Edit Medicine
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Flash Messages -->
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+
+                        {% if messages %}
+
+                            {% for category, message in messages %}
+
+                                <div class="alert alert-{{ category }} alert-dismissible fade show">
+
+                                    {{ message }}
+
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="alert">
+                                    </button>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% endif %}
+
+                    {% endwith %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('medicine.edit_medicine',
+                                           medicine_id=medicine.id) }}">
+
+                        <div class="row">
+
+                            <!-- Medicine Name -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Medicine Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    class="form-control"
+                                    value="{{ medicine.name }}"
+                                    required>
+
+                            </div>
+
+                            <!-- Batch Number -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Batch Number
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="batch_number"
+                                    class="form-control"
+                                    value="{{ medicine.batch_number }}"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                            <!-- Category -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Category
+
+                                </label>
+
+                                <select
+                                    name="category"
+                                    class="form-select"
+                                    required>
+
+                                    <option value="Tablet"
+                                        {% if medicine.category=="Tablet" %}selected{% endif %}>
+                                        Tablet
+                                    </option>
+
+                                    <option value="Capsule"
+                                        {% if medicine.category=="Capsule" %}selected{% endif %}>
+                                        Capsule
+                                    </option>
+
+                                    <option value="Injection"
+                                        {% if medicine.category=="Injection" %}selected{% endif %}>
+                                        Injection
+                                    </option>
+
+                                    <option value="Syrup"
+                                        {% if medicine.category=="Syrup" %}selected{% endif %}>
+                                        Syrup
+                                    </option>
+
+                                    <option value="Drops"
+                                        {% if medicine.category=="Drops" %}selected{% endif %}>
+                                        Drops
+                                    </option>
+
+                                    <option value="Cream"
+                                        {% if medicine.category=="Cream" %}selected{% endif %}>
+                                        Cream
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- Quantity -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Quantity
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    min="0"
+                                    class="form-control"
+                                    value="{{ medicine.quantity }}"
+                                    required>
+
+                            </div>
+
+                        </div>
+                                                <div class="row">
+
+                            <!-- Price -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Price (₹)
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="price"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    value="{{ medicine.price }}"
+                                    required>
+
+                            </div>
+
+                            <!-- Expiry Date -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Expiry Date
+
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="expiry_date"
+                                    class="form-control"
+                                    value="{{ medicine.expiry_date.strftime('%Y-%m-%d') }}"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                            <!-- Low Stock Alert -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Low Stock Alert
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="low_stock_alert"
+                                    class="form-control"
+                                    value="{{ medicine.low_stock_alert }}"
+                                    min="1"
+                                    required>
+
+                                <div class="form-text">
+
+                                    Alert will trigger when quantity is
+                                    less than or equal to this value.
+
+                                </div>
+
+                            </div>
+
+                            <!-- Information -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <div class="alert alert-warning mt-4">
+
+                                    <strong>Update Reminder</strong>
+
+                                    <ul class="mb-0">
+
+                                        <li>Verify batch number before updating.</li>
+
+                                        <li>Check expiry date carefully.</li>
+
+                                        <li>Ensure quantity matches inventory.</li>
+
+                                        <li>Save changes after verification.</li>
+
+                                    </ul>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+
+                            <a
+                                href="{{ url_for('medicine.medicines') }}"
+                                class="btn btn-secondary">
+
+                                <i class="fa-solid fa-arrow-left"></i>
+
+                                Cancel
+
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary">
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
+                                Update Medicine
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

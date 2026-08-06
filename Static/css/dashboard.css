@@ -1,0 +1,280 @@
+/* ==========================================
+   MediTracker Dashboard Styles
+========================================== */
+
+body {
+    background-color: #f5f7fb;
+}
+
+/* ==========================
+   Dashboard Header
+========================== */
+
+.dashboard-header h2 {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.dashboard-header p {
+    color: #6c757d;
+}
+
+/* ==========================
+   Dashboard Cards
+========================== */
+
+.dashboard-card {
+
+    border: none;
+
+    border-radius: 15px;
+
+    transition: all .3s ease;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+
+    overflow: hidden;
+
+}
+
+.dashboard-card:hover {
+
+    transform: translateY(-5px);
+
+    box-shadow: 0 12px 25px rgba(0,0,0,.12);
+
+}
+
+.dashboard-card .card-body {
+
+    text-align: center;
+
+    padding: 25px;
+
+}
+
+.dashboard-card h6 {
+
+    color: #6c757d;
+
+    margin-bottom: 10px;
+
+    font-weight: 600;
+
+}
+
+.dashboard-card h2 {
+
+    color: #198754;
+
+    font-size: 2rem;
+
+    font-weight: bold;
+
+}
+
+/* ==========================
+   Quick Actions
+========================== */
+
+.card-header {
+
+    font-weight: 600;
+
+    background: #198754;
+
+    color: white;
+
+}
+
+.btn {
+
+    border-radius: 8px;
+
+    transition: .3s;
+
+}
+
+.btn:hover {
+
+    transform: translateY(-2px);
+
+}
+
+/* ==========================
+   Tables
+========================== */
+
+.table {
+
+    margin-bottom: 0;
+
+}
+
+.table thead {
+
+    background: #198754;
+
+    color: white;
+
+}
+
+.table th {
+
+    vertical-align: middle;
+
+}
+
+.table td {
+
+    vertical-align: middle;
+
+}
+
+/* Hover */
+
+.table tbody tr:hover {
+
+    background: #f3fff8;
+
+}
+
+/* ==========================
+   Cards
+========================== */
+
+.card {
+
+    border: none;
+
+    border-radius: 15px;
+
+    margin-bottom: 20px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+
+}
+
+/* ==========================
+   Charts
+========================== */
+
+canvas {
+
+    width: 100% !important;
+
+    height: 320px !important;
+
+}
+
+/* ==========================
+   Responsive Tables
+========================== */
+
+.table-responsive {
+
+    overflow-x: auto;
+
+}
+
+/* ==========================
+   Badge Colors
+========================== */
+
+.badge-low {
+
+    background: #ffc107;
+
+    color: black;
+
+}
+
+.badge-expired {
+
+    background: #dc3545;
+
+}
+
+.badge-good {
+
+    background: #198754;
+
+}
+
+/* ==========================
+   Quick Action Buttons
+========================== */
+
+.quick-actions .btn {
+
+    margin-right: 10px;
+
+    margin-bottom: 10px;
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:992px){
+
+.dashboard-card h2{
+
+font-size:1.8rem;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.dashboard-card{
+
+margin-bottom:20px;
+
+}
+
+.card-body{
+
+padding:20px;
+
+}
+
+canvas{
+
+height:250px !important;
+
+}
+
+}
+
+@media(max-width:576px){
+
+.dashboard-card h2{
+
+font-size:1.5rem;
+
+}
+
+.card-header{
+
+text-align:center;
+
+}
+
+.btn{
+
+width:100%;
+
+margin-bottom:10px;
+
+}
+
+.quick-actions .btn{
+
+margin-right:0;
+
+}
+
+}

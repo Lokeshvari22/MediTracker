@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}
+Expired & Expiring Medicines | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">
+                <i class="fa-solid fa-calendar-xmark text-danger me-2"></i>Expired & Expiring Medicines
+            </h2>
+            <p class="text-muted">
+                Track, archive, and export medicines reaching or past their expiration dates.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('report.export_report', report_type='expired', format='pdf') }}"
+               class="btn btn-danger shadow-sm">
+                <i class="fa-solid fa-file-pdf me-2"></i>Export PDF Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card border-0 border-start border-danger border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Expired Medicines</h6>
+                    <h3 class="text-danger fw-bold mb-0">{{ expired_count or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Expiring in 30 Days</h6>
+                    <h3 class="text-warning fw-bold mb-0">{{ expiring_count or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Monitored</h6>
+                    <h3 class="text-primary fw-bold mb-0">{{ total_medicines or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Safe Inventory</h6>
+                    <h3 class="text-success fw-bold mb-0">{{ safe_count or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('medicine.expiring_medicines') }}" class="row g-3 mb-4 card p-3 border-0 shadow-sm mx-0 bg-white">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text"
+                       name="search"
+                       class="form-control"
+                       placeholder="Search by name or batch number..."
+                       value="{{ search or '' }}">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Expiry Alerts</option>
+                <option value="expired" {% if status=="expired" %}selected{% endif %}>Expired Only</option>
+                <option value="soon" {% if status=="soon" %}selected{% endif %}>Expiring Soon Only</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-filter me-1"></i> Filter
+            </button>
+        </div>
+
+        <div class="col-md-2">
+            <a href="{{ url_for('medicine.expiring_medicines') }}" class="btn btn-outline-secondary w-100">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset
+            </a>
+        </div>
+    </form>
+
+    <!-- Medicine Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Medicine Name</th>
+                        <th>Batch Number</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if medicines %}
+                        {% for medicine in medicines %}
+                        <tr>
+                            <td class="fw-semibold">{{ medicine.name }}</td>
+                            <td><code>{{ medicine.batch_number }}</code></td>
+                            <td><span class="badge bg-light text-dark border">{{ medicine.category or 'General' }}</span></td>
+                            <td>{{ medicine.quantity }}</td>
+                            <td>{{ medicine.expiry_date.strftime('%d-%m-%Y') if medicine.expiry_date else 'N/A' }}</td>
+                            <td>
+                                {% if medicine.is_expired %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Expired</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Expiring Soon</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('medicine.edit_medicine', medicine_id=medicine.id) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+
+                                    <button class="btn btn-sm btn-outline-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#archiveModal{{ medicine.id }}"
+                                            title="Archive">
+                                        <i class="fa-solid fa-box-archive"></i>
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ medicine.id }}"
+                                            title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fa-solid fa-circle-check fa-3x text-success mb-3"></i>
+                                    <h5>No expired or expiring medicines found.</h5>
+                                    <p class="mb-0">Your current inventory compliance looks great!</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('medicine.expiring_medicines', page=pagination.prev_num, search=search, status=status) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page in pagination.iter_pages() %}
+                {% if page %}
+                    {% if page == pagination.page %}
+                        <li class="page-item active"><span class="page-link">{{ page }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('medicine.expiring_medicines', page=page, search=search, status=status) }}">{{ page }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('medicine.expiring_medicines', page=pagination.next_num, search=search, status=status) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Archived Records Section -->
+    <div class="card mt-4 shadow-sm border-0">
+        <div class="card-header bg-secondary text-white fw-bold d-flex align-items-center gap-2">
+            <i class="fa-solid fa-archive"></i> Archived Expired Stock History
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Medicine Name</th>
+                            <th>Batch #</th>
+                            <th>Category</th>
+                            <th>Qty</th>
+                            <th>Loss Amount (₹)</th>
+                            <th>Archived On</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if archived_records %}
+                            {% for item in archived_records %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold">{{ item.name }}</td>
+                                <td><span class="badge bg-light text-dark">{{ item.batch_number }}</span></td>
+                                <td>{{ item.category or 'General' }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td class="text-danger fw-bold">₹ {{ "%.2f"|format(item.loss_amount or 0.0) }}</td>
+                                <td>{{ item.expired_date.strftime('%d-%m-%Y') if item.expired_date else 'N/A' }}</td>
+                                <td class="text-center">
+                                    <form method="POST" action="{{ url_for('medicine.delete_archived_medicine', expired_id=item.id) }}" onsubmit="return confirm('Delete this archived record permanently?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="fa-solid fa-box-open fa-2x mb-2 d-block"></i>
+                                    No archived expired records found.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    {% if medicines %}
+        {% for medicine in medicines %}
+        <!-- Archive Modal -->
+        <div class="modal fade" id="archiveModal{{ medicine.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title"><i class="fa-solid fa-box-archive me-2"></i>Archive Medicine</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to move <strong>{{ medicine.name }}</strong> (Batch: {{ medicine.batch_number }}) to the expired archives?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('medicine.archive_medicine', medicine_id=medicine.id) }}">
+                            <button type="submit" class="btn btn-warning">Archive Record</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal{{ medicine.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="fa-solid fa-trash me-2"></i>Delete Medicine</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to permanently delete <strong>{{ medicine.name }}</strong>? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('medicine.delete_medicine', medicine_id=medicine.id) }}">
+                            <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% endblock %}

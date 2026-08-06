@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | MediTracker
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2>Dashboard</h2>
+
+            <p class="text-muted">
+                Welcome back, {{ current_user.username }}
+            </p>
+
+        </div>
+
+        <div>
+
+            <a href="{{ url_for('medicine.add_medicine') }}"
+               class="btn btn-success">
+
+                <i class="fa-solid fa-plus"></i>
+
+                Add Medicine
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Summary Cards -->
+
+    <div class="row g-4">
+
+        <div class="col-lg-2 col-md-4">
+
+            <div class="card dashboard-card">
+
+                <div class="card-body">
+
+                    <h6>Total Medicines</h6>
+
+                    <h2>{{ metrics.total_medicines }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+
+            <div class="card dashboard-card">
+
+                <div class="card-body">
+
+                    <h6>Low Stock</h6>
+
+                    <h2>{{ metrics.low_stock }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+
+            <div class="card dashboard-card">
+
+                <div class="card-body">
+
+                    <h6>Expired</h6>
+
+                    <h2>{{ metrics.expired_medicines }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card dashboard-card">
+
+                <div class="card-body">
+
+                    <h6>Expiring Soon</h6>
+
+                    <h2>{{ metrics.expiring_soon }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card dashboard-card">
+
+                <div class="card-body">
+
+                    <h6>Inventory Value</h6>
+
+                    <h2>₹ {{ metrics.inventory_value }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+
+            Quick Actions
+
+        </div>
+
+        <div class="card-body">
+
+            <a href="{{ url_for('medicine.add_medicine') }}"
+               class="btn btn-success me-2">
+
+                Add Medicine
+
+            </a>
+
+            <a href="{{ url_for('import_export.import_csv') }}"
+               class="btn btn-primary me-2">
+
+                Import CSV
+
+            </a>
+
+            <a href="{{ url_for('sales.sell_medicine') }}"
+               class="btn btn-warning">
+
+                Sell Medicine
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Charts -->
+
+    <div class="row mt-4">
+
+        <div class="col-lg-6">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    Medicine Category Distribution
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="categoryChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    Monthly Sales
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="salesChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Low Stock -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+
+            Low Stock Medicines
+
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-striped">
+
+                <thead>
+
+                <tr>
+
+                    <th>Name</th>
+
+                    <th>Batch</th>
+
+                    <th>Quantity</th>
+
+                    <th>Alert Level</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for medicine in metrics.low_stock_list %}
+
+                <tr>
+
+                    <td>{{ medicine.name }}</td>
+
+                    <td>{{ medicine.batch_number }}</td>
+
+                    <td>{{ medicine.quantity }}</td>
+
+                    <td>{{ medicine.low_stock_alert }}</td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="4" class="text-center">
+
+                        No low stock medicines.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Expiring Soon -->
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+
+            Expiring Soon
+
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                <tr>
+
+                    <th>Name</th>
+
+                    <th>Batch</th>
+
+                    <th>Expiry Date</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for medicine in metrics.expiring_list %}
+
+                <tr>
+
+                    <td>{{ medicine.name }}</td>
+
+                    <td>{{ medicine.batch_number }}</td>
+
+                    <td>{{ medicine.expiry_date }}</td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="3" class="text-center">
+
+                        No medicines expiring soon.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Recently Expired -->
+
+    <div class="card mt-4 mb-5">
+
+        <div class="card-header bg-danger text-white">
+
+            Recently Expired Medicines
+
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table">
+
+                <thead>
+
+                <tr>
+
+                    <th>Name</th>
+
+                    <th>Batch</th>
+
+                    <th>Expired On</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for medicine in metrics.recently_expired %}
+
+                <tr>
+
+                    <td>{{ medicine.name }}</td>
+
+                    <td>{{ medicine.batch_number }}</td>
+
+                    <td>{{ medicine.expiry_date }}</td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="3" class="text-center">
+
+                        No expired medicines.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

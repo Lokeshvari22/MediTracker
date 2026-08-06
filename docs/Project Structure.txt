@@ -1,0 +1,152 @@
+MediTracker/
+│
+├── app.py                     # Application entry point
+├── config.py                  # Configuration
+├── requirements.txt
+├── README.md
+├── .env                       # Email credentials, secret key
+├── .gitignore
+│
+├── instance/
+│   └── medicine_tracker.db
+│
+├── database/
+│   ├── __init__.py
+│   ├── database.py            # SQLAlchemy initialization
+│   └── seed.py                # Sample data (optional)
+│
+├── models/
+│   ├── __init__.py
+│   ├── user.py
+│   ├── medicine.py
+│   ├── supplier.py
+│   ├── purchase.py
+│   ├── sale.py
+│   ├── transaction.py
+│   └── expired_medicine.py
+│
+├── routes/
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── dashboard.py
+│   ├── medicine.py
+│   ├── supplier.py
+│   ├── purchase.py
+│   ├── sales.py
+│   ├── transaction.py
+│   ├── report.py
+│   ├── import_export.py
+│   └── api.py
+│
+├── services/
+│   ├── auth_service.py
+│   ├── inventory_service.py
+│   ├── expiry_service.py
+│   ├── sales_service.py
+│   ├── supplier_service.py
+│   ├── report_service.py
+│   ├── csv_service.py
+│   ├── pdf_service.py
+│   ├── analytics_service.py
+│   └── email_service.py
+│
+├── templates/
+│   ├── base.html
+│   ├── login.html
+│   ├── signup.html
+│   │
+│   ├── dashboard.html
+│   │
+│   ├── medicines/
+│   │   ├── medicines.html
+│   │   ├── add_medicine.html
+│   │   ├── edit_medicine.html
+│   │   ├── import_csv.html
+│   │   ├── export.html
+│   │   └── expired.html
+│   │
+│   ├── suppliers/
+│   │   ├── suppliers.html
+│   │   ├── add_supplier.html
+│   │   └── edit_supplier.html
+│   │
+│   ├── purchases/
+│   │   ├── purchases.html
+│   │   ├── add_purchase.html
+│   │   └── purchase_details.html
+│   │
+│   ├── sales/
+│   │   ├── sales.html
+│   │   ├── sell_medicine.html
+│   │   └── invoice.html
+│   │
+│   ├── reports/
+│   │   ├── reports.html
+│   │   ├── analytics.html
+│   │   └── charts.html
+│   │
+│   └── transactions/
+│       └── transactions.html
+│
+├── static/
+│   ├── css/
+│   │   ├── style.css
+│   │   ├── dashboard.css
+│   │   ├── medicine.css
+│   │   ├── report.css
+│   │   └── auth.css
+│   │
+│   ├── js/
+│   │   ├── dashboard.js
+│   │   ├── medicine.js
+│   │   ├── import.js
+│   │   ├── report.js
+│   │   └── validation.js
+│   │
+│   ├── images/
+│   │
+│   └── uploads/
+│       ├── csv/
+│       ├── reports/
+│       └── invoices/
+│
+├── utils/
+│   ├── validators.py
+│   ├── helpers.py
+│   ├── constants.py
+│   └── decorators.py
+│
+├── analytics/
+│   ├── stock_analysis.py
+│   ├── expiry_analysis.py
+│   ├── sales_analysis.py
+│   └── dashboard_metrics.py
+│
+├── reports/
+│   ├── pdf_generator.py
+│   ├── excel_generator.py
+│   └── csv_generator.py
+│
+├── mail/
+│   ├── email_sender.py
+│   └── templates/
+│       ├── expiry_alert.html
+│       └── low_stock_alert.html
+│
+├── sample_data/
+│   ├── medicines.csv
+│   ├── suppliers.csv
+│   └── demo_database.db
+│
+├── tests/
+│   ├── test_auth.py
+│   ├── test_medicine.py
+│   ├── test_sales.py
+│   └── test_import.py
+│
+└── docs/
+    ├── Project_Plan.md
+    ├── Database_Schema.md
+    ├── API_Documentation.md
+    ├── User_Guide.md
+    └── Screenshots/

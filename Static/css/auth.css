@@ -1,0 +1,213 @@
+/* ===========================================
+   Authentication Pages Stylesheet
+   Project: MediTracker
+=========================================== */
+
+/* Global Body Reset for Auth Pages */
+body.auth-body {
+    background: linear-gradient(135deg, #f4fff7 0%, #e6f7eb 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* Center authentication wrapper */
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* ==========================
+   Card Layout & Elevation
+========================== */
+.auth-card {
+    border: none;
+    border-radius: 20px;
+    background-color: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 100%;
+    max-width: 480px; /* Limits max width on desktop */
+}
+
+.auth-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.auth-card-body {
+    padding: 40px;
+}
+
+/* ==========================
+   Brand & Logo Headings
+========================== */
+.auth-brand-icon {
+    color: #198754;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.auth-title {
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    color: #212529;
+    margin-bottom: 5px;
+}
+
+.auth-subtitle {
+    font-size: 15px;
+    color: #6c757d;
+}
+
+/* ==========================
+   Form Controls & Labels
+========================== */
+.form-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid #ced4da;
+    background-color: #f8f9fa;
+    font-size: 15px;
+    transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+}
+
+.form-control:focus {
+    border-color: #198754;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.15);
+    outline: none;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.input-group .form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* ==========================
+   Buttons
+========================== */
+.btn-auth-primary {
+    background-color: #198754;
+    border-color: #198754;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease;
+}
+
+.btn-auth-primary:hover {
+    background-color: #157347;
+    border-color: #146c43;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(25, 135, 84, 0.3);
+}
+
+.btn-auth-outline {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 12px;
+    border: 2px solid #198754;
+    color: #198754;
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-auth-outline:hover {
+    background-color: #198754;
+    color: #ffffff;
+}
+
+/* ==========================
+   Dividers
+========================== */
+.auth-divider {
+    margin: 30px 0;
+    border-top: 1px solid #e9ecef;
+    opacity: 1;
+}
+
+/* ==========================
+   Links & Navigation
+========================== */
+.auth-link {
+    color: #198754;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.auth-link:hover, .auth-link:focus-visible {
+    color: #146c43;
+    text-decoration: underline;
+    outline: none;
+}
+
+/* ==========================
+   Alerts & Notifications
+========================== */
+.auth-alert {
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* ==========================
+   Responsive Breakpoints
+========================== */
+@media (max-width: 768px) {
+    .auth-card-body {
+        padding: 30px;
+    }
+    
+    .auth-title {
+        font-size: 24px;
+    }
+    
+    .auth-container {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .auth-card-body {
+        padding: 25px 20px;
+    }
+    
+    .auth-title {
+        font-size: 22px;
+    }
+    
+    .btn-auth-primary, .btn-auth-outline {
+        width: 100%;
+        padding: 12px;
+    }
+}

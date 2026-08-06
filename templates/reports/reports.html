@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reports Dashboard | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4 mb-5">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-file-invoice-dollar text-success me-2"></i>Reports Dashboard
+            </h2>
+            <p class="text-muted mb-0">
+                Generate and export detailed inventory, purchase, sales, and expiry reports.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('report.export_csv', report_type=selected_report_type or 'inventory', from_date=from_date, to_date=to_date) }}" class="btn btn-sm btn-outline-info">
+                <i class="fa-solid fa-file-csv me-1"></i> CSV
+            </a>
+
+            <a href="{{ url_for('report.export_report', report_type=selected_report_type or 'inventory', format='pdf', from_date=from_date, to_date=to_date) }}" class="btn btn-sm btn-outline-danger">
+                <i class="fa-solid fa-file-pdf me-1"></i> PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="row mb-4 g-3">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Medicines</h6>
+                    <h2 class="text-primary fw-bold mb-0">{{ total_medicines or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Inventory Valuation</h6>
+                    <h2 class="text-success fw-bold mb-0">₹ {{ "%.2f"|format(inventory_value or 0.0) }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Sales</h6>
+                    <h2 class="text-warning fw-bold mb-0">₹ {{ "%.2f"|format(total_sales or 0.0) }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 border-start border-danger border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Expired / Expiring Count</h6>
+                    <h2 class="text-danger fw-bold mb-0">{{ expired_count or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light fw-bold py-3">
+            <i class="fa-solid fa-sliders me-2 text-primary"></i>Generate Custom Report
+        </div>
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('report.reports') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Report Type</label>
+                    <select name="report_type" class="form-select">
+                        <option value="inventory" {% if selected_report_type == 'inventory' or not selected_report_type %}selected{% endif %}>Inventory Overview</option>
+                        <option value="sales" {% if selected_report_type == 'sales' %}selected{% endif %}>Sales History</option>
+                        <option value="purchase" {% if selected_report_type == 'purchase' %}selected{% endif %}>Purchase Orders</option>
+                        <option value="expiry" {% if selected_report_type == 'expiry' %}selected{% endif %}>Expiry Audit</option>
+                        <option value="low_stock" {% if selected_report_type == 'low_stock' %}selected{% endif %}>Low Stock Warnings</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">From Date</label>
+                    <input type="date" class="form-control" name="from_date" value="{{ from_date or '' }}">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">To Date</label>
+                    <input type="date" class="form-control" name="to_date" value="{{ to_date or '' }}">
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> Generate Report
+                    </button>
+                    <a href="{{ url_for('report.reports') }}" class="btn btn-outline-secondary w-100">
+                        <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0 fw-bold">
+                <i class="fa-solid fa-table me-2"></i>Report Results Table
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">ID</th>
+                            <th>Medicine Item</th>
+                            <th>Category</th>
+                            <th>Batch #</th>
+                            <th class="text-center">Quantity</th>
+                            <th>Expiry Date</th>
+                            <th class="text-end pe-3">Valuation / Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if reports %}
+                            {% for report in reports %}
+                            {% set qty = report.quantity if report.quantity is defined else 0 %}
+                            {% set price_val = report.price or report.sale_price or report.unit_price or 0.0 %}
+                            {% set total_val = report.total_amount if report.total_amount is defined else (qty * price_val) %}
+                            <tr>
+                                <td class="ps-3 text-muted">{{ report.id }}</td>
+                                <td>
+                                    <strong class="text-dark">{{ report.name or (report.medicine.name if report.medicine else 'N/A') }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ report.category or (report.medicine.category if report.medicine else 'General') }}</span>
+                                </td>
+                                <td><code>{{ report.batch_number or (report.medicine.batch_number if report.medicine else 'N/A') }}</code></td>
+                                <td class="text-center fw-semibold">{{ qty }}</td>
+                                <td>
+                                    {% if report.expiry_date %}
+                                        {{ report.expiry_date.strftime("%d-%m-%Y") if report.expiry_date.strftime is defined else report.expiry_date }}
+                                    {% elif report.expired_date %}
+                                        {{ report.expired_date.strftime("%d-%m-%Y") if report.expired_date.strftime is defined else report.expired_date }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3 fw-bold text-success">
+                                    ₹ {{ "%.2f"|format(total_val) }}
+                                </td>
+                                <td>
+                                    {% if qty == 0 %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i>Out of Stock</span>
+                                    {% elif report.low_stock_alert is defined and qty <= report.low_stock_alert %}
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Low Stock</span>
+                                    {% elif report.is_expired is defined and report.is_expired %}
+                                        <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i>Expired</span>
+                                    {% else %}
+                                        <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Active / OK</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fa-solid fa-folder-open fa-3x text-secondary mb-3"></i>
+                                        <h5>No Report Data Available</h5>
+                                        <p class="mb-0">Try adjusting the filter criteria or date ranges above.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('report.reports', page=pagination.prev_num, report_type=selected_report_type, from_date=from_date, to_date=to_date) }}">
+                    Previous
+                </a>
+            </li>
+
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('report.reports', page=page_num, report_type=selected_report_type, from_date=from_date, to_date=to_date) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('report.reports', page=pagination.next_num, report_type=selected_report_type, from_date=from_date, to_date=to_date) }}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Recently Generated Reports Audit Log -->
+    <div class="card shadow-sm border-0 mt-5">
+        <div class="card-header bg-light fw-bold py-3">
+            <i class="fa-solid fa-clock-rotate-left me-2 text-secondary"></i>Recently Generated System Exports
+        </div>
+        <div class="card-body p-0">
+            {% if history %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Generated Timestamp</th>
+                            <th>Report Type</th>
+                            <th>Generated By</th>
+                            <th>Export Format</th>
+                            <th class="text-end pe-3">Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                        <tr>
+                            <td class="ps-3 text-muted">
+                                {% if item.created_at %}
+                                    {{ item.created_at.strftime("%d-%m-%Y %H:%M") if item.created_at.strftime is defined else item.created_at }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-primary">{{ item.report_type or 'General' }}</span></td>
+                            <td>{{ item.user.username if item.user else 'System Admin' }}</td>
+                            <td>
+                                <code>{{ item.file_type or item.format or 'PDF' }}</code>
+                            </td>
+                            <td class="text-end pe-3">
+                                {% if item.file_name %}
+                                <a href="{{ url_for('static', filename='uploads/reports/' ~ item.file_name) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    Download
+                                </a>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">
+                <p class="mb-0">No recent export generation history recorded.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

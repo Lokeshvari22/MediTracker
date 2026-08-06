@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}
+Sales Invoice | MediTracker
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                Tax Invoice
+
+            </h2>
+
+            <small class="text-muted">
+
+                Invoice Number :
+                {{ sale.invoice_number }}
+
+            </small>
+
+        </div>
+
+        <div>
+
+            <button
+                onclick="window.print()"
+                class="btn btn-primary">
+
+                <i class="fa-solid fa-print"></i>
+
+                Print Invoice
+
+            </button>
+
+            <a
+                href="{{ url_for('sales.sales') }}"
+                class="btn btn-secondary">
+
+                Back
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Pharmacy Information -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-header bg-primary text-white">
+
+            Pharmacy Information
+
+        </div>
+
+        <div class="card-body">
+
+            <h4>
+
+                MediTracker Pharmacy
+
+            </h4>
+
+            <p>
+
+                123 Medical Street<br>
+
+                Chennai - 600001<br>
+
+                Phone : +91 9876543210<br>
+
+                Email : info@meditracker.com
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Customer Details -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-header bg-success text-white">
+
+            Customer Details
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-borderless">
+
+                <tr>
+
+                    <th>Name</th>
+
+                    <td>{{ sale.customer_name }}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Phone</th>
+
+                    <td>{{ sale.customer_phone }}</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Date</th>
+
+                    <td>
+
+                        {{ sale.sale_date.strftime("%d-%m-%Y %H:%M") }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Payment</th>
+
+                    <td>
+
+                        {{ sale.payment_method }}
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Medicine Details -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-header bg-info text-white">
+
+            Medicine Details
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-bordered">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Medicine</th>
+
+                        <th>Batch</th>
+
+                        <th>Category</th>
+
+                        <th>Quantity</th>
+
+                        <th>Price</th>
+
+                        <th>Total</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+
+                            {{ sale.medicine.name }}
+
+                        </td>
+
+                        <td>
+
+                            {{ sale.medicine.batch_number }}
+
+                        </td>
+
+                        <td>
+
+                            {{ sale.medicine.category }}
+
+                        </td>
+
+                        <td>
+
+                            {{ sale.quantity }}
+
+                        </td>
+
+                        <td>
+
+                            ₹ {{ "%.2f"|format(sale.sale_price) }}
+
+                        </td>
+
+                        <td>
+
+                            ₹ {{ "%.2f"|format(sale.total_amount) }}
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Bill Summary -->
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <div class="card shadow">
+
+                <div class="card-header">
+
+                    Notes
+
+                </div>
+
+                <div class="card-body">
+
+                    {% if sale.notes %}
+
+                        {{ sale.notes }}
+
+                    {% else %}
+
+                        <span class="text-muted">
+
+                            No notes available.
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="card shadow">
+
+                <div class="card-header">
+
+                    Invoice Summary
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table">
+
+                        <tr>
+
+                            <th>Subtotal</th>
+
+                            <td>
+
+                                ₹ {{ "%.2f"|format(sale.subtotal) }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Discount</th>
+
+                            <td>
+
+                                ₹ {{ "%.2f"|format(sale.discount) }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>GST</th>
+
+                            <td>
+
+                                {{ sale.gst }} %
+
+                            </td>
+
+                        </tr>
+
+                        <tr class="table-success">
+
+                            <th>
+
+                                Grand Total
+
+                            </th>
+
+                            <th>
+
+                                ₹ {{ "%.2f"|format(sale.total_amount) }}
+
+                            </th>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+
+    <div class="text-center mt-5">
+
+        <p class="text-muted">
+
+            Thank you for your purchase.
+
+        </p>
+
+        <small>
+
+            This invoice was generated automatically by MediTracker.
+
+        </small>
+
+    </div>
+
+</div>
+
+{% endblock %}
