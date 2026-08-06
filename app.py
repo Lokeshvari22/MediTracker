@@ -4,7 +4,6 @@ from sqlalchemy import text
 
 from config import Config
 from database.database import db
-from mail.email_sender import mail
 from models.user import User
 
 # Import all Blueprints
@@ -79,8 +78,6 @@ def ensure_purchase_columns():
             conn.execute(text(stmt))
 
 
-# In app.py
-
 def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -97,7 +94,6 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    mail.init_app(app)
 
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "info"
@@ -125,6 +121,7 @@ def create_app(config_name=None):
         ensure_purchase_columns()
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
