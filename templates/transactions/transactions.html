@@ -18,20 +18,53 @@ Inventory Transactions | MediTracker
                 View complete stock movement audit history and activity logs.
             </p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('report.export_report', report_type='inventory', format='csv') if 'report' in config.get('ENDPOINTS', {}) else url_for('import_export.export_csv') }}"
-               class="btn btn-success shadow-sm">
-                <i class="fa-solid fa-file-csv me-1"></i> CSV
-            </a>
+       <div class="d-flex gap-2">
 
-            <a href="{{ url_for('report.export_report', report_type='inventory', format='excel') if 'report' in config.get('ENDPOINTS', {}) else url_for('import_export.export_excel') }}"
-               class="btn btn-primary shadow-sm">
-                <i class="fa-solid fa-file-excel me-1"></i> Excel
-            </a>
-            <a href="{{ url_for('report.export_report', report_type=selected_report_type or 'inventory', format='pdf', from_date=from_date, to_date=to_date) }}" class="btn btn-sm btn-outline-danger">
-                <i class="fa-solid fa-file-pdf me-1"></i> PDF
-            </a>
-        </div>
+    <a href="{{ url_for(
+        'report.export_report',
+        report_type='transactions',
+        format='csv',
+        from_date=from_date,
+        to_date=to_date
+    ) }}"
+       class="btn btn-success shadow-sm">
+
+        <i class="fa-solid fa-file-csv me-1"></i>
+        CSV
+
+    </a>
+
+
+    <a href="{{ url_for(
+        'report.export_report',
+        report_type='transactions',
+        format='excel',
+        from_date=from_date,
+        to_date=to_date
+    ) }}"
+       class="btn btn-primary shadow-sm">
+
+        <i class="fa-solid fa-file-excel me-1"></i>
+        Excel
+
+    </a>
+
+
+    <a href="{{ url_for(
+        'report.export_report',
+        report_type='transactions',
+        format='pdf',
+        from_date=from_date,
+        to_date=to_date
+    ) }}"
+       class="btn btn-sm btn-outline-danger">
+
+        <i class="fa-solid fa-file-pdf me-1"></i>
+        PDF
+
+    </a>
+
+</div>
     </div>
 
     <!-- Filters Form -->
