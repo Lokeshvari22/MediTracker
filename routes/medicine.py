@@ -1,3 +1,5 @@
+from datetime import datetime, date, timedelta
+
 from flask import (
     Blueprint,
     render_template,
@@ -16,7 +18,11 @@ from models.medicine import Medicine
 from models.expired_medicine import ExpiredMedicine
 from services.expiry_service import ExpiryService
 from services.inventory_service import InventoryService
-from datetime import datetime, date, timedelta
+
+
+# ==========================================================
+# Medicine Blueprint
+# ==========================================================
 
 medicine_bp = Blueprint(
     "medicine",
@@ -33,77 +39,161 @@ medicine_bp = Blueprint(
 @login_required
 def medicines():
 
-    page = request.args.get("page", 1, type=int)
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
 
-    search = request.args.get("search", "").strip()
+    search = request.args.get(
+        "search",
+        "",
+        type=str
+    ).strip()
 
-    category = request.args.get("category", "").strip()
+    category = request.args.get(
+        "category",
+        "",
+        type=str
+    ).strip()
 
-    low_stock = request.args.get("low_stock")
+    per_page = 10
 
     if search:
 
-        medicines = InventoryService.search(
-            keyword=search,
-            user_id=current_user.id
+        pagination = InventoryService.search(
+            search,
+            current_user.id,
+            page=page,
+            per_page=per_page
         )
 
-        return render_template(
-            "medicines/medicines.html",
-            medicines=medicines,
-            search=search,
-            category=category,
-            low_stock=low_stock
-        )
+    elif category:
 
-    if category:
-
-        medicines = InventoryService.filter_category(
+        pagination = InventoryService.filter_category(
             category,
-            current_user.id
+            current_user.id,
+            page=page,
+            per_page=per_page
         )
 
-        return render_template(
-            "medicines/medicines.html",
-            medicines=medicines,
-            search=search,
-            category=category,
-            low_stock=low_stock
+    else:
+
+        pagination = InventoryService.list_medicines(
+            current_user.id,
+            page=page,
+            per_page=per_page
         )
-
-    if low_stock:
-
-        medicines = InventoryService.low_stock(
-            current_user.id
-        )
-
-        return render_template(
-            "medicines/medicines.html",
-            medicines=medicines,
-            search=search,
-            category=category,
-            low_stock=True
-        )
-
-    pagination = InventoryService.list_medicines(
-        user_id=current_user.id,
-        page=page,
-        per_page=10
-    )
 
     return render_template(
         "medicines/medicines.html",
         medicines=pagination.items,
         pagination=pagination,
         search=search,
-        category=category,
-        low_stock=False
+        category=category
     )
+
+
+# ==========================================================
+# Add Medicine
+# ==========================================================
+
+@medicine_bp.route("/add", methods=["GET", "POST"])
+@login_required
+def add_medicine():
+
+    if request.method == "POST":
+
+        try:
+
+            raw_expiry = request.form.get(
+                "expiry_date"
+            )
+
+            parsed_expiry = (
+                datetime.strptime(
+                    raw_expiry,
+                    "%Y-%m-%d"
+                ).date()
+                if raw_expiry
+                else None
+            )
+
+            data = {
+
+                "name": request.form.get(
+                    "name",
+                    ""
+                ).strip(),
+
+                "batch_number": request.form.get(
+                    "batch_number",
+                    ""
+                ).strip(),
+
+                "category": request.form.get(
+                    "category",
+                    ""
+                ).strip(),
+
+                "quantity": int(
+                    request.form.get(
+                        "quantity",
+                        0
+                    )
+                ),
+
+                "price": float(
+                    request.form.get(
+                        "price",
+                        0
+                    )
+                ),
+
+                "expiry_date": parsed_expiry,
+
+                "low_stock_alert": int(
+                    request.form.get(
+                        "low_stock_alert",
+                        10
+                    )
+                )
+            }
+
+            InventoryService.add_medicine(
+                data=data,
+                user_id=current_user.id
+            )
+
+            flash(
+                "Medicine added successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for("medicine.medicines")
+            )
+
+        except Exception as e:
+
+            flash(
+                f"Unable to add medicine. {e}",
+                "danger"
+            )
+
+    return render_template(
+        "medicines/add_medicine.html"
+    )
+
+
 # ==========================================================
 # Edit Medicine
 # ==========================================================
 
-@medicine_bp.route("/edit/<int:medicine_id>", methods=["GET", "POST"])
+@medicine_bp.route(
+    "/edit/<int:medicine_id>",
+    methods=["GET", "POST"]
+)
 @login_required
 def edit_medicine(medicine_id):
 
@@ -127,27 +217,58 @@ def edit_medicine(medicine_id):
 
         try:
 
-            raw_expiry = request.form.get("expiry_date")
-            parsed_expiry = datetime.strptime(raw_expiry, "%Y-%m-%d").date() if raw_expiry else None
+            raw_expiry = request.form.get(
+                "expiry_date"
+            )
+
+            parsed_expiry = (
+                datetime.strptime(
+                    raw_expiry,
+                    "%Y-%m-%d"
+                ).date()
+                if raw_expiry
+                else None
+            )
 
             data = {
 
-                "name": request.form.get("name", "").strip(),
+                "name": request.form.get(
+                    "name",
+                    ""
+                ).strip(),
 
-                "batch_number": request.form.get("batch_number", "").strip(),
+                "batch_number": request.form.get(
+                    "batch_number",
+                    ""
+                ).strip(),
 
-                "category": request.form.get("category", "").strip(),
+                "category": request.form.get(
+                    "category",
+                    ""
+                ).strip(),
 
-                "quantity": int(request.form.get("quantity", 0)),
+                "quantity": int(
+                    request.form.get(
+                        "quantity",
+                        0
+                    )
+                ),
 
-                "price": float(request.form.get("price", 0)),
+                "price": float(
+                    request.form.get(
+                        "price",
+                        0
+                    )
+                ),
 
                 "expiry_date": parsed_expiry,
 
                 "low_stock_alert": int(
-                    request.form.get("low_stock_alert", 10)
+                    request.form.get(
+                        "low_stock_alert",
+                        10
+                    )
                 )
-
             }
 
             InventoryService.update_medicine(
@@ -176,11 +297,15 @@ def edit_medicine(medicine_id):
         medicine=medicine
     )
 
+
 # ==========================================================
 # Delete Medicine
 # ==========================================================
 
-@medicine_bp.route("/delete/<int:medicine_id>", methods=["POST"])
+@medicine_bp.route(
+    "/delete/<int:medicine_id>",
+    methods=["POST"]
+)
 @login_required
 def delete_medicine(medicine_id):
 
@@ -246,58 +371,119 @@ def low_stock_medicines():
 
 
 # ==========================================================
-# Expiring Medicines
+# Expiring / Expired Medicines
 # ==========================================================
 
 @medicine_bp.route("/expiring")
 @login_required
 def expiring_medicines():
 
-    page = request.args.get("page", 1, type=int)
-    search = request.args.get("search", "").strip()
-    status = request.args.get("status", "")
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    search = request.args.get(
+        "search",
+        "",
+        type=str
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        "",
+        type=str
+    )
+
     days = request.args.get(
         "days",
-        default=30,
+        30,
         type=int
     )
 
     today = date.today()
-    future = today + timedelta(days=days)
+
+    future = today + timedelta(
+        days=days
+    )
+
+    # ------------------------------------------------------
+    # Current inventory medicines that are expired
+    # or expiring soon
+    # ------------------------------------------------------
 
     query = Medicine.query.filter(
         Medicine.user_id == current_user.id,
-        Medicine.expiry_date != None,
+        Medicine.expiry_date.isnot(None),
         Medicine.expiry_date <= future
     )
 
+    # ------------------------------------------------------
+    # Status filter
+    # ------------------------------------------------------
+
     if status == "expired":
-        query = query.filter(Medicine.expiry_date < today)
+
+        query = query.filter(
+            Medicine.expiry_date < today
+        )
+
     elif status == "soon":
+
         query = query.filter(
             Medicine.expiry_date >= today,
             Medicine.expiry_date <= future
         )
 
+    # ------------------------------------------------------
+    # Search filter
+    # ------------------------------------------------------
+
     if search:
+
         query = query.filter(
-            (Medicine.name.ilike(f"%{search}%")) |
-            (Medicine.batch_number.ilike(f"%{search}%"))
+            (Medicine.name.ilike(
+                f"%{search}%"
+            )) |
+            (Medicine.batch_number.ilike(
+                f"%{search}%"
+            ))
         )
 
     medicines = query.order_by(
         Medicine.expiry_date.asc()
     ).all()
 
-    expired_count = len(ExpiryService.expired_medicines(current_user.id))
+    # ------------------------------------------------------
+    # Summary
+    # ------------------------------------------------------
+
+    expired_count = len(
+        ExpiryService.expired_medicines(
+            current_user.id
+        )
+    )
+
     expiring_count = ExpiryService.total_expiring(
         current_user.id,
         days=days
     )
+
     total_medicines = Medicine.query.filter_by(
         user_id=current_user.id
     ).count()
-    safe_count = max(total_medicines - expired_count - expiring_count, 0)
+
+    safe_count = max(
+        total_medicines
+        - expired_count
+        - expiring_count,
+        0
+    )
+
+    # ------------------------------------------------------
+    # Archived expired medicines
+    # ------------------------------------------------------
 
     archived_records = ExpiredMedicine.query.filter_by(
         user_id=current_user.id
@@ -307,14 +493,23 @@ def expiring_medicines():
 
     return render_template(
         "medicines/expired.html",
+
         medicines=medicines,
+
         archived_records=archived_records,
+
         days=days,
+
         search=search,
+
         status=status,
+
         expired_count=expired_count,
+
         expiring_count=expiring_count,
+
         total_medicines=total_medicines,
+
         safe_count=safe_count
     )
 
@@ -327,24 +522,42 @@ def expiring_medicines():
 @login_required
 def move_expired_medicines():
 
-    moved = InventoryService.move_expired(
-        current_user.id
-    )
+    try:
 
-    flash(
-        f"{moved} expired medicines moved successfully.",
-        "success"
-    )
+        moved = InventoryService.move_expired(
+            current_user.id
+        )
+
+        flash(
+            f"{moved} expired medicines moved successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        flash(
+            f"Unable to move expired medicines. {e}",
+            "danger"
+        )
 
     return redirect(
         url_for("medicine.expiring_medicines")
     )
 
 
-@medicine_bp.route("/archive/<int:medicine_id>", methods=["POST"])
+# ==========================================================
+# Archive One Expired Medicine
+# ==========================================================
+
+@medicine_bp.route(
+    "/archive/<int:medicine_id>",
+    methods=["POST"]
+)
 @login_required
 def archive_medicine(medicine_id):
+
     try:
+
         ExpiryService.archive_medicine(
             user_id=current_user.id,
             medicine_id=medicine_id
@@ -354,7 +567,9 @@ def archive_medicine(medicine_id):
             "Medicine archived successfully.",
             "success"
         )
+
     except Exception as e:
+
         flash(
             f"Unable to archive medicine. {e}",
             "danger"
@@ -365,19 +580,31 @@ def archive_medicine(medicine_id):
     )
 
 
-@medicine_bp.route("/archive/delete/<int:expired_id>", methods=["POST"])
+# ==========================================================
+# Delete Archived Medicine
+# ==========================================================
+
+@medicine_bp.route(
+    "/archive/delete/<int:expired_id>",
+    methods=["POST"]
+)
 @login_required
 def delete_archived_medicine(expired_id):
+
     try:
+
         ExpiryService.delete_archived_record(
             user_id=current_user.id,
             expired_id=expired_id
         )
+
         flash(
             "Archived record deleted successfully.",
             "success"
         )
+
     except Exception as e:
+
         flash(
             f"Unable to delete archived record. {e}",
             "danger"
@@ -386,35 +613,3 @@ def delete_archived_medicine(expired_id):
     return redirect(
         url_for("medicine.expiring_medicines")
     )
-
-
-@medicine_bp.route("/add", methods=["GET", "POST"])
-@login_required
-def add_medicine():
-    if request.method == "POST":
-        try:
-            raw_expiry = request.form.get("expiry_date")
-            parsed_expiry = datetime.strptime(raw_expiry, "%Y-%m-%d").date() if raw_expiry else None
-
-            data = {
-                "name": request.form.get("name", "").strip(),
-                "batch_number": request.form.get("batch_number", "").strip(),
-                "category": request.form.get("category", "").strip(),
-                "quantity": int(request.form.get("quantity", 0)),
-                "price": float(request.form.get("price", 0)),
-                "expiry_date": parsed_expiry,  # <--- Converted string to date object
-                "low_stock_alert": int(request.form.get("low_stock_alert", 10))
-            }
-
-            InventoryService.add_medicine(
-                data=data,
-                user_id=current_user.id
-            )
-
-            flash("Medicine added successfully.", "success")
-            return redirect(url_for("medicine.medicines"))
-
-        except Exception as e:
-            flash(f"Unable to add medicine. {e}", "danger")
-
-    return render_template("medicines/add_medicine.html")

@@ -151,18 +151,28 @@ class ReportService:
     @staticmethod
     def expiry_report(user_id, from_date=None, to_date=None):
 
-        query = ExpiredMedicine.query.filter_by(
-            user_id=user_id
+        query = Medicine.query.filter(
+            Medicine.user_id == user_id,
+            Medicine.expiry_date.isnot(None),
+            Medicine.expiry_date < datetime.today().date()
         )
 
         if from_date:
-            query = query.filter(ExpiredMedicine.expiry_date >= from_date)
+            query = query.filter(
+                Medicine.expiry_date >= from_date.date()
+                if isinstance(from_date, datetime)
+                else Medicine.expiry_date >= from_date
+            )
 
         if to_date:
-            query = query.filter(ExpiredMedicine.expiry_date <= to_date)
+            query = query.filter(
+                Medicine.expiry_date <= to_date.date()
+                if isinstance(to_date, datetime)
+                else Medicine.expiry_date <= to_date
+            )
 
         return query.order_by(
-            ExpiredMedicine.expiry_date.desc()
+            Medicine.expiry_date.desc()
         ).all()
 
     # ==================================

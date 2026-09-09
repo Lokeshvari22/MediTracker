@@ -23,18 +23,51 @@ Import Medicines | MediTracker
                 <div class="card-body p-4">
 
                     <!-- Requirements Callout -->
-                    <div class="alert alert-info border-0 shadow-sm mb-4">
-                        <h6 class="fw-bold">
-                            <i class="fa-solid fa-circle-info me-2"></i>CSV Requirements
-                        </h6>
-                        <ul class="mb-0 small ps-3">
-                            <li>Only standard <code>.csv</code> files are supported.</li>
-                            <li>Maximum allowed file size: <strong>16 MB</strong>.</li>
-                            <li>The first row must contain column headers matching the required schema.</li>
-                            <li>Expiry Date format must strictly be <strong>YYYY-MM-DD</strong>.</li>
-                            <li>Medicines with duplicate batch numbers will be safely skipped.</li>
-                        </ul>
-                    </div>
+                   <div class="alert alert-info border-0 shadow-sm mb-4">
+
+                    <h6 class="fw-bold">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        CSV Requirements
+                    </h6>
+
+                    <ul class="mb-0 small ps-3">
+
+                        <li>
+                            Only standard <code>.csv</code> files are supported.
+                        </li>
+
+                        <li>
+                            Maximum allowed file size: <strong>16 MB</strong>.
+                        </li>
+
+                        <li>
+                            Required columns:
+                            <code>name</code>,
+                            <code>batch_number</code>,
+                            <code>category</code>,
+                            <code>quantity</code>,
+                            <code>price</code>,
+                            <code>expiry_date</code>,
+                            <code>low_stock_alert</code>.
+                        </li>
+
+                        <li>
+                            Expiry Date must use
+                            <strong>YYYY-MM-DD</strong>.
+                        </li>
+
+                        <li>
+                            Duplicate batch numbers for the same user
+                            will be skipped.
+                        </li>
+
+                        <li>
+                            Invalid rows will be reported after import.
+                        </li>
+
+                    </ul>
+
+                </div>
 
                     <form id="importForm" method="POST"
                           enctype="multipart/form-data"

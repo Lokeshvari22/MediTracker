@@ -1,208 +1,394 @@
 /**
- * MediTracker Dashboard Controller
- * Handles live analytics fetching and Chart.js dynamic rendering.
+ * MediTracker Dashboard
+ * Chart.js Dashboard Controller
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-    loadDashboardCharts();
-});
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        loadDashboardCharts();
+    }
+);
 
-// Chart instances store to prevent canvas reuse errors
+
 const chartInstances = {};
 
+
+/* ==========================================
+   Load Dashboard Charts
+========================================== */
+
 async function loadDashboardCharts() {
+
     try {
-        const response = await fetch("/api/dashboard/charts");
+
+        const response = await fetch(
+            "/api/dashboard/charts",
+            {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
 
         if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
+            throw new Error(
+                `HTTP Error: ${response.status}`
+            );
         }
 
         const data = await response.json();
 
-        createCategoryChart(data.category_chart || data.categories || []);
-        createSalesChart(data.monthly_sales || data.sales || []);
+        console.log(
+            "Dashboard Chart Data:",
+            data
+        );
+
+        createCategoryChart(
+            data.category || {}
+        );
+
+        createSalesChart(
+            data.sales || {}
+        );
+
     } catch (error) {
-        console.error("Dashboard Analytics Fetch Error:", error);
+
+        console.error(
+            "Dashboard Analytics Error:",
+            error
+        );
+
         showEmptyCharts();
     }
 }
 
-/* ===========================================
-   Category Distribution Doughnut Chart
-=========================================== */
-function createCategoryChart(categoryData) {
-    const canvas = document.getElementById("categoryChart");
-    if (!canvas) return;
 
-    if (!categoryData || categoryData.length === 0) {
+/* ==========================================
+   Category Doughnut Chart
+========================================== */
+
+function createCategoryChart(categoryData) {
+
+    const canvas =
+        document.getElementById(
+            "categoryChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    const labels =
+        categoryData.labels || [];
+
+    const values =
+        categoryData.values || [];
+
+    if (
+        labels.length === 0 ||
+        values.length === 0
+    ) {
         showEmptyCategory(canvas);
         return;
     }
 
-    const labels = categoryData.map(item => item.category || item.name || "General");
-    const values = categoryData.map(item => item.count || item.total || item.quantity || 0);
-
-    // Destroy existing instance if present
     if (chartInstances.categoryChart) {
+
         chartInstances.categoryChart.destroy();
     }
 
-    const ctx = canvas.getContext("2d");
+    const ctx =
+        canvas.getContext("2d");
 
-    chartInstances.categoryChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    data: values,
-                    backgroundColor: [
-                        "#198754",
-                        "#0d6efd",
-                        "#ffc107",
-                        "#dc3545",
-                        "#20c997",
-                        "#0dcaf0",
-                        "#6f42c1",
-                        "#fd7e14"
-                    ],
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    hoverOffset: 6
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "bottom",
-                    labels: {
-                        boxWidth: 12,
-                        padding: 15,
-                        font: {
-                            family: "'Segoe UI', sans-serif",
-                            size: 12
-                        }
+    chartInstances.categoryChart =
+        new Chart(ctx, {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+                    {
+                        data: values,
+
+                        backgroundColor: [
+                            "#198754",
+                            "#0d6efd",
+                            "#ffc107",
+                            "#dc3545",
+                            "#20c997",
+                            "#0dcaf0",
+                            "#6f42c1",
+                            "#fd7e14"
+                        ],
+
+                        borderWidth: 2,
+
+                        borderColor:
+                            "#ffffff",
+
+                        hoverOffset: 6
                     }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            return ` ${context.label}: ${context.raw} Items`;
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+
+                        position:
+                            "bottom",
+
+                        labels: {
+
+                            boxWidth: 12,
+
+                            padding: 15
+                        }
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label:
+                                function (
+                                    context
+                                ) {
+
+                                    return (
+                                        ` ${context.label}: ` +
+                                        `${context.raw} Medicines`
+                                    );
+                                }
                         }
                     }
                 }
             }
-        }
-    });
+        });
 }
 
-/* ===========================================
-   Monthly Sales Bar Chart
-=========================================== */
-function createSalesChart(monthlySales) {
-    const canvas = document.getElementById("salesChart");
-    if (!canvas) return;
 
-    if (!monthlySales || monthlySales.length === 0) {
+/* ==========================================
+   Monthly Sales Bar Chart
+========================================== */
+
+function createSalesChart(salesData) {
+
+    const canvas =
+        document.getElementById(
+            "salesChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    const labels =
+        salesData.labels || [];
+
+    const values =
+        salesData.values || [];
+
+    if (
+        labels.length === 0 ||
+        values.length === 0
+    ) {
         showEmptySales(canvas);
         return;
     }
 
-    const labels = monthlySales.map(item => item.month || item.name || "N/A");
-    const values = monthlySales.map(item => item.total || item.sales || item.amount || 0);
-
-    // Destroy existing instance if present
     if (chartInstances.salesChart) {
+
         chartInstances.salesChart.destroy();
     }
 
-    const ctx = canvas.getContext("2d");
+    const ctx =
+        canvas.getContext("2d");
 
-    // Optional gradient fill for sales bars
-    let gradient = "#198754";
-    if (ctx) {
-        gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, "rgba(25, 135, 84, 0.85)");
-        gradient.addColorStop(1, "rgba(25, 135, 84, 0.2)");
-    }
+    chartInstances.salesChart =
+        new Chart(ctx, {
 
-    chartInstances.salesChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: "Monthly Revenue (₹)",
-                    data: values,
-                    backgroundColor: gradient,
-                    borderColor: "#198754",
-                    borderWidth: 1.5,
-                    borderRadius: 6,
-                    borderSkipped: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: "top"
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            return ` Revenue: ₹${parseFloat(context.raw).toFixed(2)}`;
+            type: "bar",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+                    {
+                        label:
+                            "Monthly Revenue (₹)",
+
+                        data: values,
+
+                        backgroundColor:
+                            "#198754",
+
+                        borderColor:
+                            "#198754",
+
+                        borderWidth: 1,
+
+                        borderRadius: 6,
+
+                        borderSkipped:
+                            false
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio:
+                    false,
+
+                plugins: {
+
+                    legend: {
+
+                        display: true,
+
+                        position: "top"
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label:
+                                function (
+                                    context
+                                ) {
+
+                                    const value =
+                                        parseFloat(
+                                            context.raw || 0
+                                        );
+
+                                    return (
+                                        ` Revenue: ₹` +
+                                        value.toFixed(2)
+                                    );
+                                }
                         }
                     }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function (value) {
-                            return "₹ " + value;
+
+                scales: {
+
+                    x: {
+
+                        grid: {
+                            display: false
+                        }
+                    },
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+
+                            callback:
+                                function (
+                                    value
+                                ) {
+
+                                    return (
+                                        "₹ " +
+                                        value
+                                    );
+                                }
                         }
                     }
                 }
             }
-        }
-    });
+        });
 }
 
-/* ===========================================
-   Empty Chart State Fallbacks
-=========================================== */
+
+/* ==========================================
+   Empty Category State
+========================================== */
+
 function showEmptyCategory(canvas) {
-    if (!canvas || !canvas.parentElement) return;
-    canvas.parentElement.innerHTML =
-        "<div class='p-4 text-center text-muted'><i class='fa-solid fa-chart-pie fa-2x mb-2 text-secondary'></i><p class='mb-0 small'>No category data available to plot.</p></div>";
+
+    if (
+        !canvas ||
+        !canvas.parentElement
+    ) {
+        return;
+    }
+
+    canvas.parentElement.innerHTML = `
+        <div class="p-4 text-center text-muted">
+            <i class="fa-solid fa-chart-pie fa-2x mb-2"></i>
+            <p class="mb-0 small">
+                No category data available.
+            </p>
+        </div>
+    `;
 }
+
+
+/* ==========================================
+   Empty Sales State
+========================================== */
 
 function showEmptySales(canvas) {
-    if (!canvas || !canvas.parentElement) return;
-    canvas.parentElement.innerHTML =
-        "<div class='p-4 text-center text-muted'><i class='fa-solid fa-chart-bar fa-2x mb-2 text-secondary'></i><p class='mb-0 small'>No sales revenue data recorded.</p></div>";
+
+    if (
+        !canvas ||
+        !canvas.parentElement
+    ) {
+        return;
+    }
+
+    canvas.parentElement.innerHTML = `
+        <div class="p-4 text-center text-muted">
+            <i class="fa-solid fa-chart-bar fa-2x mb-2"></i>
+            <p class="mb-0 small">
+                No sales revenue data recorded.
+            </p>
+        </div>
+    `;
 }
 
+
+/* ==========================================
+   Empty Charts
+========================================== */
+
 function showEmptyCharts() {
-    const category = document.getElementById("categoryChart");
-    const sales = document.getElementById("salesChart");
+
+    const category =
+        document.getElementById(
+            "categoryChart"
+        );
+
+    const sales =
+        document.getElementById(
+            "salesChart"
+        );
 
     if (category) {
         showEmptyCategory(category);
     }
+
     if (sales) {
         showEmptySales(sales);
     }

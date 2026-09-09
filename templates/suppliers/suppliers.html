@@ -152,9 +152,9 @@ Suppliers | MediTracker
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ url_for('supplier.view_supplier', supplier_id=supplier.id) if 'view_supplier' in config.get('ENDPOINTS', {}) else url_for('supplier.edit_supplier', supplier_id=supplier.id) }}"
-                                           class="btn btn-sm btn-outline-info"
-                                           title="View Details">
+                                        <a href="{{ url_for('supplier.view_supplier', supplier_id=supplier.id) }}"
+                                        class="btn btn-sm btn-outline-info"
+                                        title="View Details">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
 

@@ -197,7 +197,23 @@ def add_supplier():
     return render_template(
         "suppliers/add_supplier.html"
     )
+@supplier_bp.route("/view/<int:supplier_id>")
+@login_required
+def view_supplier(supplier_id):
 
+    supplier = SupplierService.get_supplier(
+        supplier_id,
+        current_user.id
+    )
+
+    if not supplier:
+        flash("Supplier not found.", "warning")
+        return redirect(url_for("supplier.suppliers"))
+
+    return render_template(
+        "suppliers/view_supplier.html",
+        supplier=supplier
+    )
 
 # ==========================================================
 # Edit Supplier

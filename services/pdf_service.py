@@ -431,20 +431,37 @@ class PDFService:
                 ]
                 filename = "purchases.pdf"
             else:
-                items = ReportService.expiry_report(user_id, from_date=from_date_obj, to_date=to_date_obj)
-                title = "Expiry Audit Report"
-                headers = ["ID", "Name", "Batch", "Qty", "Loss", "Expired On"]
+                items = ReportService.expiry_report(
+                    user_id,
+                    from_date=from_date_obj,
+                    to_date=to_date_obj
+                )
+
+                title = "Expired Medicines Report"
+
+                headers = [
+                    "ID",
+                    "Name",
+                    "Batch",
+                    "Category",
+                    "Qty",
+                    "Price",
+                    "Expiry Date"
+                ]
+
                 rows = [
                     [
                         it.id,
                         it.name,
                         it.batch_number,
+                        it.category or "",
                         it.quantity,
-                        it.loss_amount,
-                        str(it.expiry_date or it.expired_date)
+                        it.price,
+                        str(it.expiry_date)
                     ]
                     for it in items
                 ]
+
                 filename = "expired.pdf"
 
             filepath = os.path.join("static", "uploads", "reports", filename)

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from database.database import db
 
@@ -8,60 +8,134 @@ from models.expired_medicine import ExpiredMedicine
 
 class InventoryService:
 
-    # ----------------------------------
+    # ==================================================
     # Add Medicine
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
     def add_medicine(data, user_id):
 
-        medicine = Medicine(
+        name = str(data.get("name", "")).strip()
+        batch_number = str(
+            data.get("batch_number", "")
+        ).strip()
+        category = str(
+            data.get("category", "")
+        ).strip()
 
-            name=data["name"],
+        if not name:
+            raise ValueError(
+                "Medicine name is required."
+            )
 
-            batch_number=data["batch_number"],
+        if not batch_number:
+            raise ValueError(
+                "Batch number is required."
+            )
 
-            category=data["category"],
+        if not category:
+            raise ValueError(
+                "Category is required."
+            )
 
-            quantity=data["quantity"],
+        try:
+            quantity = int(
+                data.get("quantity", 0)
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Quantity must be a valid number."
+            )
 
-            price=data["price"],
+        if quantity < 0:
+            raise ValueError(
+                "Quantity cannot be negative."
+            )
 
-            expiry_date=data["expiry_date"],
+        try:
+            price = float(
+                data.get("price", 0)
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Price must be a valid number."
+            )
 
-            low_stock_alert=data.get(
-                "low_stock_alert",
-                10
-            ),
+        if price < 0:
+            raise ValueError(
+                "Price cannot be negative."
+            )
 
+        try:
+            low_stock_alert = int(
+                data.get(
+                    "low_stock_alert",
+                    10
+                )
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Low stock alert must be a valid number."
+            )
+
+        if low_stock_alert < 1:
+            raise ValueError(
+                "Low stock alert must be at least 1."
+            )
+
+        expiry_date = data.get(
+            "expiry_date"
+        )
+
+        # ----------------------------------------------
+        # Duplicate batch check per user
+        # ----------------------------------------------
+
+        existing = Medicine.query.filter_by(
+            batch_number=batch_number,
             user_id=user_id
+        ).first()
 
+        if existing:
+            raise ValueError(
+                f"Batch number '{batch_number}' "
+                "already exists."
+            )
+
+        medicine = Medicine(
+            name=name,
+            batch_number=batch_number,
+            category=category,
+            quantity=quantity,
+            price=price,
+            expiry_date=expiry_date,
+            low_stock_alert=low_stock_alert,
+            user_id=user_id
         )
 
         db.session.add(medicine)
-
         db.session.commit()
 
         return medicine
 
-    # ----------------------------------
+    # ==================================================
     # Get Medicine
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
-    def get_medicine(medicine_id, user_id):
+    def get_medicine(
+        medicine_id,
+        user_id
+    ):
 
         return Medicine.query.filter_by(
-
             id=medicine_id,
-
             user_id=user_id
-
         ).first()
 
-    # ----------------------------------
+    # ==================================================
     # Update Medicine
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
     def update_medicine(
@@ -69,41 +143,123 @@ class InventoryService:
         data
     ):
 
-        medicine.name = data["name"]
+        name = str(
+            data.get("name", "")
+        ).strip()
 
-        medicine.batch_number = data["batch_number"]
+        batch_number = str(
+            data.get("batch_number", "")
+        ).strip()
 
-        medicine.category = data["category"]
+        category = str(
+            data.get("category", "")
+        ).strip()
 
-        medicine.quantity = data["quantity"]
+        if not name:
+            raise ValueError(
+                "Medicine name is required."
+            )
 
-        medicine.price = data["price"]
+        if not batch_number:
+            raise ValueError(
+                "Batch number is required."
+            )
 
-        medicine.expiry_date = data["expiry_date"]
+        if not category:
+            raise ValueError(
+                "Category is required."
+            )
 
-        medicine.low_stock_alert = data.get(
-            "low_stock_alert",
-            medicine.low_stock_alert
+        # ----------------------------------------------
+        # Check duplicate batch during edit
+        # ----------------------------------------------
+
+        existing = Medicine.query.filter(
+            Medicine.user_id == medicine.user_id,
+            Medicine.batch_number == batch_number,
+            Medicine.id != medicine.id
+        ).first()
+
+        if existing:
+            raise ValueError(
+                f"Batch number '{batch_number}' "
+                "already exists."
+            )
+
+        try:
+            quantity = int(
+                data.get("quantity", 0)
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Quantity must be a valid number."
+            )
+
+        if quantity < 0:
+            raise ValueError(
+                "Quantity cannot be negative."
+            )
+
+        try:
+            price = float(
+                data.get("price", 0)
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Price must be a valid number."
+            )
+
+        if price < 0:
+            raise ValueError(
+                "Price cannot be negative."
+            )
+
+        try:
+            low_stock_alert = int(
+                data.get(
+                    "low_stock_alert",
+                    medicine.low_stock_alert
+                )
+            )
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Low stock alert must be a valid number."
+            )
+
+        if low_stock_alert < 1:
+            raise ValueError(
+                "Low stock alert must be at least 1."
+            )
+
+        medicine.name = name
+        medicine.batch_number = batch_number
+        medicine.category = category
+        medicine.quantity = quantity
+        medicine.price = price
+        medicine.expiry_date = data.get(
+            "expiry_date"
         )
+        medicine.low_stock_alert = low_stock_alert
 
         db.session.commit()
 
         return medicine
 
-    # ----------------------------------
+    # ==================================================
     # Delete Medicine
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
-    def delete_medicine(medicine):
+    def delete_medicine(
+        medicine
+    ):
 
         db.session.delete(medicine)
-
         db.session.commit()
 
-    # ----------------------------------
+    # ==================================================
     # List Medicines
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
     def list_medicines(
@@ -113,179 +269,198 @@ class InventoryService:
     ):
 
         return Medicine.query.filter_by(
-
             user_id=user_id
-
         ).order_by(
-
             Medicine.name.asc()
-
         ).paginate(
-
             page=page,
-
             per_page=per_page,
-
             error_out=False
-
         )
 
-    # ----------------------------------
-    # List Available Medicines
-    # ----------------------------------
-
-    @staticmethod
-    def list_available(user_id):
-
-        return Medicine.query.filter(
-
-            Medicine.user_id == user_id,
-            Medicine.quantity > 0
-
-        ).order_by(
-
-            Medicine.name.asc()
-
-        ).all()
-
-    # ----------------------------------
-    # List All Medicines
-    # ----------------------------------
-
-    @staticmethod
-    def list_all(user_id):
-
-        return Medicine.query.filter_by(
-
-            user_id=user_id
-
-        ).order_by(
-
-            Medicine.name.asc()
-
-        ).all()
-
-    # ----------------------------------
+    # ==================================================
     # Search Medicines
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
     def search(
         keyword,
-        user_id
+        user_id,
+        page=1,
+        per_page=10
     ):
 
-        return Medicine.query.filter(
+        keyword = str(
+            keyword or ""
+        ).strip()
 
-            Medicine.user_id == user_id,
+        query = Medicine.query.filter(
+            Medicine.user_id == user_id
+        )
 
-            Medicine.name.ilike(
-                f"%{keyword}%"
+        if keyword:
+
+            query = query.filter(
+                db.or_(
+                    Medicine.name.ilike(
+                        f"%{keyword}%"
+                    ),
+                    Medicine.batch_number.ilike(
+                        f"%{keyword}%"
+                    )
+                )
             )
 
-        ).all()
+        return query.order_by(
+            Medicine.name.asc()
+        ).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
 
-    # ----------------------------------
+    # ==================================================
     # Filter Category
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
     def filter_category(
         category,
-        user_id
+        user_id,
+        page=1,
+        per_page=10
     ):
 
-        return Medicine.query.filter_by(
-
-            category=category,
-
-            user_id=user_id
-
-        ).all()
-
-    # ----------------------------------
-    # Low Stock
-    # ----------------------------------
-
-    @staticmethod
-    def low_stock(user_id):
-
-        return Medicine.query.filter(
-
+        query = Medicine.query.filter(
             Medicine.user_id == user_id,
+            Medicine.category == category
+        )
 
-            Medicine.quantity <= Medicine.low_stock_alert
+        return query.order_by(
+            Medicine.name.asc()
+        ).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
 
-        ).all()
-
-    # ----------------------------------
-    # Expiring Soon
-    # ----------------------------------
+    # ==================================================
+    # Low Stock
+    # ==================================================
 
     @staticmethod
-    def expiring(days, user_id):
+    def low_stock(
+        user_id,
+        page=None,
+        per_page=10
+    ):
+
+        query = Medicine.query.filter(
+            Medicine.user_id == user_id,
+            Medicine.quantity <= Medicine.low_stock_alert
+        ).order_by(
+            Medicine.name.asc()
+        )
+
+        if page is not None:
+
+            return query.paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+
+        return query.all()
+
+    # ==================================================
+    # Expiring Soon
+    # ==================================================
+
+    @staticmethod
+    def expiring(
+        days,
+        user_id,
+        page=None,
+        per_page=10
+    ):
 
         today = date.today()
+        future = today + timedelta(
+            days=days
+        )
 
-        from datetime import timedelta
-
-        future = today + timedelta(days=days)
-
-        return Medicine.query.filter(
-
+        query = Medicine.query.filter(
             Medicine.user_id == user_id,
-
             Medicine.expiry_date >= today,
-
             Medicine.expiry_date <= future
+        ).order_by(
+            Medicine.expiry_date.asc()
+        )
 
-        ).all()
+        if page is not None:
 
-    # ----------------------------------
+            return query.paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+
+        return query.all()
+
+    # ==================================================
     # Move Expired Medicines
-    # ----------------------------------
+    # ==================================================
 
     @staticmethod
-    def move_expired(user_id):
+    def move_expired(
+        user_id
+    ):
 
         today = date.today()
 
         expired = Medicine.query.filter(
-
             Medicine.user_id == user_id,
-
             Medicine.expiry_date < today
-
         ).all()
 
-        for medicine in expired:
+        moved = 0
 
-            expired_record = ExpiredMedicine(
+        try:
 
-                medicine_id=medicine.id,
+            for medicine in expired:
 
-                user_id=user_id,
+                value = float(
+                    (medicine.quantity or 0)
+                    * (medicine.price or 0)
+                )
 
-                name=medicine.name,
+                expired_record = ExpiredMedicine(
+                    medicine_id=medicine.id,
+                    user_id=user_id,
+                    name=medicine.name,
+                    batch_number=medicine.batch_number,
+                    category=medicine.category,
+                    quantity=medicine.quantity,
+                    price=medicine.price,
+                    expiry_date=medicine.expiry_date,
+                    original_value=value,
+                    loss_amount=value
+                )
 
-                batch_number=medicine.batch_number,
+                db.session.add(
+                    expired_record
+                )
 
-                category=medicine.category,
+                db.session.delete(
+                    medicine
+                )
 
-                quantity=medicine.quantity,
+                moved += 1
 
-                price=medicine.price,
+            db.session.commit()
 
-                expiry_date=medicine.expiry_date,
+        except Exception:
+            db.session.rollback()
+            raise
 
-                original_value=medicine.price * medicine.quantity
-
-            )
-
-            db.session.add(expired_record)
-
-            db.session.delete(medicine)
-
-        db.session.commit()
-
-        return len(expired)
+        return moved

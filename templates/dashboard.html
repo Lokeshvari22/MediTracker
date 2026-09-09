@@ -42,6 +42,7 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Summary Cards -->
 
     <div class="row g-4">
@@ -62,6 +63,7 @@ Dashboard | MediTracker
 
         </div>
 
+
         <div class="col-lg-2 col-md-4">
 
             <div class="card dashboard-card">
@@ -77,6 +79,7 @@ Dashboard | MediTracker
             </div>
 
         </div>
+
 
         <div class="col-lg-2 col-md-4">
 
@@ -94,6 +97,7 @@ Dashboard | MediTracker
 
         </div>
 
+
         <div class="col-lg-3 col-md-6">
 
             <div class="card dashboard-card">
@@ -110,6 +114,7 @@ Dashboard | MediTracker
 
         </div>
 
+
         <div class="col-lg-3 col-md-6">
 
             <div class="card dashboard-card">
@@ -118,7 +123,9 @@ Dashboard | MediTracker
 
                     <h6>Inventory Value</h6>
 
-                    <h2>₹ {{ metrics.inventory_value }}</h2>
+                    <h2>
+                        ₹ {{ "%.2f"|format(metrics.inventory_value) }}
+                    </h2>
 
                 </div>
 
@@ -128,14 +135,13 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Quick Actions -->
 
     <div class="card mt-4">
 
         <div class="card-header">
-
             Quick Actions
-
         </div>
 
         <div class="card-body">
@@ -147,12 +153,14 @@ Dashboard | MediTracker
 
             </a>
 
+
             <a href="{{ url_for('import_export.import_csv') }}"
                class="btn btn-primary me-2">
 
                 Import CSV
 
             </a>
+
 
             <a href="{{ url_for('sales.sell_medicine') }}"
                class="btn btn-warning">
@@ -165,6 +173,7 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Charts -->
 
     <div class="row mt-4">
@@ -174,9 +183,7 @@ Dashboard | MediTracker
             <div class="card">
 
                 <div class="card-header">
-
                     Medicine Category Distribution
-
                 </div>
 
                 <div class="card-body">
@@ -189,14 +196,13 @@ Dashboard | MediTracker
 
         </div>
 
+
         <div class="col-lg-6">
 
             <div class="card">
 
                 <div class="card-header">
-
                     Monthly Sales
-
                 </div>
 
                 <div class="card-body">
@@ -211,14 +217,13 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Low Stock -->
 
     <div class="card mt-4">
 
         <div class="card-header">
-
             Low Stock Medicines
-
         </div>
 
         <div class="card-body table-responsive">
@@ -227,49 +232,56 @@ Dashboard | MediTracker
 
                 <thead>
 
-                <tr>
+                    <tr>
 
-                    <th>Name</th>
+                        <th>Name</th>
+                        <th>Batch</th>
+                        <th>Quantity</th>
+                        <th>Alert Level</th>
 
-                    <th>Batch</th>
-
-                    <th>Quantity</th>
-
-                    <th>Alert Level</th>
-
-                </tr>
+                    </tr>
 
                 </thead>
 
+
                 <tbody>
 
-                {% for medicine in metrics.low_stock_list %}
+                    {% for medicine in metrics.low_stock_list %}
 
-                <tr>
+                    <tr>
 
-                    <td>{{ medicine.name }}</td>
+                        <td>
+                            {{ medicine.name }}
+                        </td>
 
-                    <td>{{ medicine.batch_number }}</td>
+                        <td>
+                            {{ medicine.batch_number }}
+                        </td>
 
-                    <td>{{ medicine.quantity }}</td>
+                        <td>
+                            {{ medicine.quantity }}
+                        </td>
 
-                    <td>{{ medicine.low_stock_alert }}</td>
+                        <td>
+                            {{ medicine.low_stock_alert }}
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% else %}
+                    {% else %}
 
-                <tr>
+                    <tr>
 
-                    <td colspan="4" class="text-center">
+                        <td colspan="4"
+                            class="text-center">
 
-                        No low stock medicines.
+                            No low stock medicines.
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
                 </tbody>
 
@@ -279,14 +291,13 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Expiring Soon -->
 
     <div class="card mt-4">
 
         <div class="card-header">
-
             Expiring Soon
-
         </div>
 
         <div class="card-body table-responsive">
@@ -295,45 +306,51 @@ Dashboard | MediTracker
 
                 <thead>
 
-                <tr>
+                    <tr>
 
-                    <th>Name</th>
+                        <th>Name</th>
+                        <th>Batch</th>
+                        <th>Expiry Date</th>
 
-                    <th>Batch</th>
-
-                    <th>Expiry Date</th>
-
-                </tr>
+                    </tr>
 
                 </thead>
 
+
                 <tbody>
 
-                {% for medicine in metrics.expiring_list %}
+                    {% for medicine in metrics.expiring_list %}
 
-                <tr>
+                    <tr>
 
-                    <td>{{ medicine.name }}</td>
+                        <td>
+                            {{ medicine.name }}
+                        </td>
 
-                    <td>{{ medicine.batch_number }}</td>
+                        <td>
+                            {{ medicine.batch_number }}
+                        </td>
 
-                    <td>{{ medicine.expiry_date }}</td>
+                        <td>
+                            {{ medicine.expiry_date }}
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% else %}
+                    {% else %}
 
-                <tr>
+                    <tr>
 
-                    <td colspan="3" class="text-center">
+                        <td colspan="3"
+                            class="text-center">
 
-                        No medicines expiring soon.
+                            No medicines expiring soon.
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
                 </tbody>
 
@@ -343,14 +360,13 @@ Dashboard | MediTracker
 
     </div>
 
+
     <!-- Recently Expired -->
 
     <div class="card mt-4 mb-5">
 
         <div class="card-header bg-danger text-white">
-
             Recently Expired Medicines
-
         </div>
 
         <div class="card-body table-responsive">
@@ -359,45 +375,51 @@ Dashboard | MediTracker
 
                 <thead>
 
-                <tr>
+                    <tr>
 
-                    <th>Name</th>
+                        <th>Name</th>
+                        <th>Batch</th>
+                        <th>Expired On</th>
 
-                    <th>Batch</th>
-
-                    <th>Expired On</th>
-
-                </tr>
+                    </tr>
 
                 </thead>
 
+
                 <tbody>
 
-                {% for medicine in metrics.recently_expired %}
+                    {% for medicine in metrics.recently_expired %}
 
-                <tr>
+                    <tr>
 
-                    <td>{{ medicine.name }}</td>
+                        <td>
+                            {{ medicine.name }}
+                        </td>
 
-                    <td>{{ medicine.batch_number }}</td>
+                        <td>
+                            {{ medicine.batch_number }}
+                        </td>
 
-                    <td>{{ medicine.expiry_date }}</td>
+                        <td>
+                            {{ medicine.expiry_date }}
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% else %}
+                    {% else %}
 
-                <tr>
+                    <tr>
 
-                    <td colspan="3" class="text-center">
+                        <td colspan="3"
+                            class="text-center">
 
-                        No expired medicines.
+                            No expired medicines.
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
                 </tbody>
 
@@ -411,7 +433,11 @@ Dashboard | MediTracker
 
 {% endblock %}
 
+
 {% block scripts %}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
 {% endblock %}

@@ -63,6 +63,8 @@ class Config:
     LOW_STOCK_LIMIT = 10
     EXPIRY_ALERT_DAYS = 30
 
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+
     # ==================================================
     # Directory Initialization
     # ==================================================
